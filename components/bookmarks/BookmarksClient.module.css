@@ -1,0 +1,158 @@
+.page {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.shell {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.panel {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(229, 238, 241, 0.84);
+  box-shadow: var(--shadow-sm);
+}
+
+.title {
+  display: grid;
+  gap: 8px;
+}
+
+.title h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  letter-spacing: -0.04em;
+}
+
+.title p {
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.62;
+}
+
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.head h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--primary-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.bookmarkButton {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(19, 138, 158, 0.22);
+  background: rgba(19, 138, 158, 0.08);
+  color: var(--primary-strong);
+  display: grid;
+  place-items: center;
+}
+
+.copy {
+  display: grid;
+  gap: 10px;
+}
+
+.copy p {
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.62;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+.primaryAction {
+  background: var(--text);
+  color: var(--surface);
+}
+
+.secondaryAction {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.empty {
+  padding: 28px;
+  border-radius: 18px;
+  border: 1px dashed var(--border);
+  text-align: center;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
