@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth, signInAnonymously, signOut } from "firebase/auth";
 import {
   Timestamp,
   collection,
@@ -27,6 +27,14 @@ for (const [key, value] of Object.entries(firebaseConfig)) {
 }
 
 const minutesAgo = (mins) => Date.now() - mins * 60_000;
+
+// Each call returns a brand-new anonymous uid so seeded comments look like
+// different people (익명1, 익명2 …) instead of all "글쓴이".
+async function freshUid(auth) {
+  await signOut(auth).catch(() => {});
+  const { user } = await signInAnonymously(auth);
+  return user.uid;
+}
 
 const boardSeeds = [
   {
@@ -240,17 +248,18 @@ const showcaseSeeds = [
   },
 ];
 
-async function ensurePost(db, uid, seed) {
+async function ensurePost(db, auth, seed) {
   const postRef = doc(db, "posts", seed.id);
   const postSnap = await getDoc(postRef);
 
   if (!postSnap.exists()) {
+    const opUid = await freshUid(auth);
     await setDoc(postRef, {
       title: seed.title,
       coverUrl: "",
       body: seed.body,
       nickname: seed.nickname,
-      authorUid: uid,
+      authorUid: opUid,
       imageCount: 0,
       usedStoreCount: 0,
       commentCount: 0,
@@ -262,10 +271,11 @@ async function ensurePost(db, uid, seed) {
     const ref = doc(db, "posts", seed.id, "comments", `${seed.id}-${commentId}`);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
+      const commenterUid = await freshUid(auth);
       await setDoc(ref, {
         nickname,
         body,
-        authorUid: uid,
+        authorUid: commenterUid,
         createdAt: Timestamp.fromMillis(minutesAgo(minutes)),
       });
     }
@@ -275,17 +285,18 @@ async function ensurePost(db, uid, seed) {
   await updateDoc(postRef, { commentCount });
 }
 
-async function ensureShowcase(db, uid, seed) {
+async function ensureShowcase(db, auth, seed) {
   const showcaseRef = doc(db, "showcases", seed.id);
   const showcaseSnap = await getDoc(showcaseRef);
   if (showcaseSnap.exists()) return;
 
+  const opUid = await freshUid(auth);
   await setDoc(showcaseRef, {
     title: seed.title,
     coverUrl: seed.imageUrls[0] ?? "",
     body: "",
     nickname: seed.nickname,
-    authorUid: uid,
+    authorUid: opUid,
     imageCount: seed.imageUrls.length,
     usedStoreCount: seed.usedStores.length,
     commentCount: seed.comments.length,
@@ -296,15 +307,16 @@ async function ensureShowcase(db, uid, seed) {
     body: seed.body,
     imageUrls: seed.imageUrls,
     usedStores: seed.usedStores,
-    authorUid: uid,
+    authorUid: opUid,
   });
 
   for (const [commentId, nickname, body, minutes] of seed.comments) {
     const ref = doc(db, "showcases", seed.id, "comments", `${seed.id}-${commentId}`);
+    const commenterUid = await freshUid(auth);
     await setDoc(ref, {
       nickname,
       body,
-      authorUid: uid,
+      authorUid: commenterUid,
       createdAt: Timestamp.fromMillis(minutesAgo(minutes)),
     });
   }
@@ -312,15 +324,15 @@ async function ensureShowcase(db, uid, seed) {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const { user } = await signInAnonymously(auth);
+await signInAnonymously(auth);
 const db = getFirestore(app);
 
 for (const seed of boardSeeds) {
-  await ensurePost(db, user.uid, seed);
+  await ensurePost(db, auth, seed);
 }
 
 for (const seed of showcaseSeeds) {
-  await ensureShowcase(db, user.uid, seed);
+  await ensureShowcase(db, auth, seed);
 }
 
 console.log(
@@ -328,7 +340,7 @@ console.log(
     {
       seededPosts: boardSeeds.length,
       seededShowcases: showcaseSeeds.length,
-      uid: user.uid,
+      done: true,
     },
     null,
     2,
