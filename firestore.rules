@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uidIs(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function validText(value, maxLen) {
+      return value is string && value.size() > 0 && value.size() <= maxLen;
+    }
+
+    function unlocked(itemId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid)/unlocks/$(itemId));
+    }
+
+    // 사용자 지갑 (크레딧 잔액)
+    match /users/{uid} {
+      allow read: if uidIs(uid);
+      allow create: if uidIs(uid) && request.resource.data.credits is int;
+      allow update: if uidIs(uid) && request.resource.data.credits is int;
+      allow delete: if false;
+
+      match /unlocks/{itemId} {
+        allow read: if uidIs(uid);
+        allow create: if uidIs(uid)
+          && get(/databases/$(database)/documents/users/$(uid)).data.credits >= 1;
+        allow update, delete: if false;
+      }
+    }
+
+    // 후기 = 공개 카드(목록) + 잠긴 상세(본문/이미지/사용업체) + 댓글
+    // posts(게시판), showcases(제작후기) 동일 구조
+    match /posts/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && validText(request.resource.data.title, 200);
+      allow update: if (signedIn() && resource.data.authorUid == request.auth.uid)
+        || (signedIn()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']));
+      allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+
+      match /detail/{docId} {
+        allow read: if signedIn()
+          && (resource.data.authorUid == request.auth.uid || unlocked(id));
+        allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
+        allow update, delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+      }
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.authorUid == request.auth.uid
+          && validText(request.resource.data.body, 1000);
+        allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+        allow update: if false;
+      }
+    }
+
+    match /showcases/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && validText(request.resource.data.title, 200);
+      allow update: if (signedIn() && resource.data.authorUid == request.auth.uid)
+        || (signedIn()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']));
+      allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+
+      match /detail/{docId} {
+        allow read: if signedIn()
+          && (resource.data.authorUid == request.auth.uid || unlocked(id));
+        allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
+        allow update, delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+      }
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.authorUid == request.auth.uid
+          && validText(request.resource.data.body, 1000);
+        allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+        allow update: if false;
+      }
+    }
+
+    // 업체별 간단 후기 (무료)
+    match /storeReviews/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && validText(request.resource.data.body, 500)
+        && validText(request.resource.data.storeId, 120);
+      allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+      allow update: if false;
+    }
+
+    // 업체 정보 제보 (관리자가 콘솔에서 확인)
+    match /contributions/{id} {
+      allow read: if false;
+      allow create: if true;
+    }
+  }
+}

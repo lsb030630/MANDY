@@ -1,0 +1,41 @@
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: 100%;
+  max-width: var(--app-max);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: var(--nav-h);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: saturate(160%) blur(16px);
+  border-top: 1px solid var(--border);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: color 0.15s ease;
+}
+
+.item:active {
+  color: var(--primary-600);
+}
+
+.active {
+  color: var(--primary);
+}
+
+.icon {
+  display: inline-flex;
+}

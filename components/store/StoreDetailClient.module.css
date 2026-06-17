@@ -1,0 +1,223 @@
+.head {
+  padding: 10px 16px 14px;
+}
+
+.name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary-700);
+  background: var(--primary-50);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.desc {
+  margin-top: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.mapWrap {
+  margin: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: 168px;
+  border: 0;
+}
+
+.locText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 14px;
+  font-size: 0.88rem;
+  color: var(--text);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 6px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--border);
+}
+
+.rowLabel {
+  flex-shrink: 0;
+  width: 84px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.rowValue {
+  flex: 1;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 13px 0;
+  border-top: 1px solid var(--border);
+}
+
+.tag {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary-700);
+  background: var(--primary-50);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.verified {
+  padding-top: 10px;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+.reviews {
+  padding: 18px 16px 32px;
+}
+
+.secTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 1.06rem;
+  font-weight: 700;
+}
+
+.secTitle span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary-700);
+  background: var(--primary-50);
+  border-radius: 999px;
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.composerRow {
+  display: flex;
+  gap: 8px;
+}
+
+.composerRow input {
+  flex: 1;
+}
+
+.composerRow button {
+  flex-shrink: 0;
+  width: 52px;
+  min-width: 52px;
+  padding: 0;
+}
+
+.err {
+  font-size: 0.84rem;
+  color: var(--danger);
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review {
+  padding: 13px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.reviewTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.reviewName {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.reviewTime {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.reviewBody {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.del {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+.bmOn {
+  color: var(--primary);
+}

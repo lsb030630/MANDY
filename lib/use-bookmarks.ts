@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { DEMO_BOOKMARKS } from "./demo";
+import { hasFirebaseConfig } from "./firebase";
 
 const STORAGE_KEY = "mandi:bookmarks";
 
@@ -9,7 +11,7 @@ export function useBookmarks() {
     if (typeof window === "undefined") return [];
 
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (!saved) return [];
+    if (!saved) return hasFirebaseConfig() ? [] : DEMO_BOOKMARKS;
 
     try {
       const parsed = JSON.parse(saved);

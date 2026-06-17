@@ -1,0 +1,87 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(17, 24, 39, 0.45);
+  animation: fade 0.18s ease;
+}
+
+.sheet {
+  width: 100%;
+  max-width: var(--app-max);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: var(--shadow-lg);
+  animation: rise 0.24s ease;
+}
+
+.handle {
+  width: 40px;
+  height: 4px;
+  margin: 10px auto 2px;
+  border-radius: 999px;
+  background: var(--border-strong);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px 6px;
+}
+
+.header h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.header p {
+  margin-top: 5px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 16px 24px;
+}
+
+.message {
+  font-size: 0.86rem;
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.actions :global(.btn) {
+  flex: 1;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(18px);
+  }
+  to {
+    transform: none;
+  }
+}

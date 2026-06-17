@@ -1,0 +1,17 @@
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: var(--app-max);
+  margin: 0 auto;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--border), var(--shadow-md);
+}
+
+.viewport {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+}
