@@ -63,8 +63,8 @@
 .badge {
   font-size: 0.76rem;
   font-weight: 600;
-  color: var(--primary-700);
-  background: var(--primary-50);
+  color: var(--text-dim);
+  background: var(--surface-2);
   padding: 3px 9px;
   border-radius: 999px;
 }

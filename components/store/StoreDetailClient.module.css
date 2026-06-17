@@ -18,8 +18,8 @@
 .badge {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--primary-700);
-  background: var(--primary-50);
+  color: var(--text-dim);
+  background: var(--surface-2);
   padding: 4px 10px;
   border-radius: 999px;
 }
@@ -103,8 +103,8 @@
 .tag {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--primary-700);
-  background: var(--primary-50);
+  color: var(--text-dim);
+  background: var(--surface-2);
   padding: 4px 10px;
   border-radius: 999px;
 }
@@ -136,8 +136,8 @@
   padding: 0 7px;
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--primary-700);
-  background: var(--primary-50);
+  color: var(--text-dim);
+  background: var(--surface-2);
   border-radius: 999px;
 }
 
