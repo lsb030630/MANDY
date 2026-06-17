@@ -100,7 +100,7 @@ export function WorkComposer({ kind }: { kind: WorkKind }) {
         </div>
         <div>
           <label className="label">작업 사진 · 도안</label>
-          <ImageUploader uid={configured ? uid : null} value={images} onChange={setImages} />
+          <ImageUploader value={images} onChange={setImages} />
         </div>
         <div>
           <label className="label">작업 설명</label>
