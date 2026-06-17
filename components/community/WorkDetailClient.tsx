@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Lock, Send, Trash2 } from "lucide-react";
 import { CreditBadge } from "./CreditBadge";
 import { DemoBanner } from "./DemoBanner";
+import { buildAnonLabels } from "@/lib/anon";
 import { useAuthUid } from "@/lib/auth";
 import { unlockItem } from "@/lib/credits";
 import { DEMO_UID } from "@/lib/demo";
 import { hasFirebaseConfig } from "@/lib/firebase";
 import { formatRelative } from "@/lib/format";
-import { useNickname } from "@/lib/use-nickname";
+import { getVisibleStoreByName } from "@/lib/stores";
 import {
   addComment,
   deleteComment,
@@ -31,7 +32,6 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
   const meta = workMeta[kind];
   const router = useRouter();
   const { uid } = useAuthUid();
-  const { nickname, setNickname } = useNickname();
   const configured = hasFirebaseConfig();
   const demo = !configured;
   const authorUid = configured ? uid : DEMO_UID;
@@ -44,6 +44,15 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
   const [commentBody, setCommentBody] = useState("");
   const [commentError, setCommentError] = useState("");
   const [posting, setPosting] = useState(false);
+
+  const missingText = kind === "board" ? "삭제되었거나 없는 글이에요." : "삭제되었거나 없는 후기예요.";
+  const commentPlaceholder = kind === "board" ? "답변 달기" : "댓글 달기";
+  const commentHint = kind === "board" ? "답변을 달면 크레딧 1을 받아요." : "";
+
+  const commentLabels = useMemo(
+    () => buildAnonLabels(comments.map((comment) => comment.authorUid), card?.authorUid),
+    [comments, card?.authorUid],
+  );
 
   useEffect(() => subscribeWorkCard(kind, id, setCard), [kind, id]);
   useEffect(() => subscribeComments(kind, id, setComments), [kind, id]);
@@ -66,7 +75,7 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
     setUnlockMsg("");
     const result = await unlockItem(uid, id);
     if (result === "insufficient") {
-      setUnlockMsg("크레딧이 부족해요. 후기를 올리면 +3 크레딧을 받아요.");
+      setUnlockMsg("크레딧이 부족해요. 게시판 답변은 +1, 후기 작성은 +3 크레딧이에요.");
       setUnlocking(false);
       return;
     }
@@ -76,7 +85,7 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("이 후기를 삭제할까요?")) return;
+    if (!window.confirm(kind === "board" ? "이 글을 삭제할까요?" : "이 후기를 삭제할까요?")) return;
     await deleteWork(kind, id);
     router.replace(meta.base);
   };
@@ -84,10 +93,6 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
   const handleComment = async (event: FormEvent) => {
     event.preventDefault();
     if (!commentBody.trim()) return;
-    if (!nickname.trim()) {
-      setCommentError("닉네임을 입력해 주세요.");
-      return;
-    }
     if (configured && !uid) {
       setCommentError("연결 중이에요. 잠시 후 다시 시도해 주세요.");
       return;
@@ -97,7 +102,7 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
     try {
       await addComment(kind, id, {
         body: commentBody.trim(),
-        nickname: nickname.trim(),
+        nickname: "",
         authorUid: authorUid ?? DEMO_UID,
       });
       setCommentBody("");
@@ -124,7 +129,7 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
       {card === undefined ? (
         <div className="empty">불러오는 중…</div>
       ) : card === null ? (
-        <div className="empty">삭제되었거나 없는 후기예요.</div>
+        <div className="empty">{missingText}</div>
       ) : detail === "locked" ? (
         <div className={styles.lockWrap}>
           <div className={styles.lockCard}>
@@ -140,7 +145,7 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
               </div>
               <h2 className={styles.lockTitle}>{card.title}</h2>
               <p className={styles.lockMeta}>
-                {card.nickname} · 사진 {card.imageCount} · 업체 {card.usedStoreCount}
+                익명 · 사진 {card.imageCount} · 업체 {card.usedStoreCount}
               </p>
               <p className={styles.lockMsg}>이 후기를 보려면 크레딧 1이 필요해요.</p>
               <div className={styles.lockActions}>
@@ -153,7 +158,7 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
                 </button>
               </div>
               {unlockMsg ? <p className={styles.err}>{unlockMsg}</p> : null}
-              <p className={styles.lockHint}>후기를 올리면 +3 크레딧을 받아요.</p>
+              <p className={styles.lockHint}>게시판 답변 +1 · 후기 작성 +3</p>
             </div>
           </div>
         </div>
@@ -166,7 +171,7 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
           <article className={styles.detail}>
             <h2 className={styles.title}>{card.title}</h2>
             <div className={styles.meta}>
-              <span className={styles.metaName}>{card.nickname}</span>
+              <span className={styles.metaName}>익명</span>
               <span>·</span>
               <span>{formatRelative(card.createdAt)}</span>
             </div>
@@ -191,12 +196,30 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
           {detail.usedStores.length ? (
             <section className={styles.usedSection}>
               <h3 className={styles.usedTitle}>사용한 업체</h3>
-              {detail.usedStores.map((store, index) => (
-                <div key={`${store.name}-${index}`} className={styles.usedStore}>
-                  <div className={styles.usedStoreName}>{store.name}</div>
-                  {store.how ? <p className={styles.usedStoreHow}>{store.how}</p> : null}
-                </div>
-              ))}
+              {detail.usedStores.map((store, index) => {
+                const linkedStore = getVisibleStoreByName(store.name);
+                const content = (
+                  <>
+                    <div className={styles.usedStoreName}>{store.name}</div>
+                    {store.how ? <p className={styles.usedStoreHow}>{store.how}</p> : null}
+                    {linkedStore ? <p className={styles.usedStoreHint}>업체 정보 보기</p> : null}
+                  </>
+                );
+
+                return linkedStore ? (
+                  <Link
+                    key={`${store.name}-${index}`}
+                    href={`/store/${linkedStore.id}`}
+                    className={`${styles.usedStore} ${styles.usedStoreLink}`}
+                  >
+                    {content}
+                  </Link>
+                ) : (
+                  <div key={`${store.name}-${index}`} className={styles.usedStore}>
+                    {content}
+                  </div>
+                );
+              })}
             </section>
           ) : null}
 
@@ -208,20 +231,14 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
 
           <section className={styles.commentSec}>
             <h3 className={styles.commentTitle}>댓글 {comments.length}</h3>
+            {commentHint ? <p className={styles.commentHint}>{commentHint}</p> : null}
             <form className={styles.composer} onSubmit={handleComment}>
-              <input
-                className="field"
-                value={nickname}
-                onChange={(event) => setNickname(event.target.value)}
-                placeholder="닉네임"
-                maxLength={20}
-              />
               <div className={styles.composerRow}>
                 <input
                   className="field"
                   value={commentBody}
                   onChange={(event) => setCommentBody(event.target.value)}
-                  placeholder="댓글 달기"
+                  placeholder={commentPlaceholder}
                   maxLength={1000}
                 />
                 <button
@@ -243,7 +260,9 @@ export function WorkDetailClient({ kind, id }: { kind: WorkKind; id: string }) {
                 comments.map((comment) => (
                   <li key={comment.id} className={styles.comment}>
                     <div className={styles.commentTop}>
-                      <span className={styles.commentName}>{comment.nickname}</span>
+                      <span className={styles.commentName}>
+                        {commentLabels.get(comment.authorUid) ?? "익명"}
+                      </span>
                       <span className={styles.commentTime}>{formatRelative(comment.createdAt)}</span>
                     </div>
                     <p className={styles.commentBody}>{comment.body}</p>

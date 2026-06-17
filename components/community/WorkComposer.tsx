@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { DemoBanner } from "./DemoBanner";
 import { ImageUploader } from "./ImageUploader";
@@ -10,7 +10,7 @@ import { UsedStoresEditor } from "./UsedStoresEditor";
 import { useAuthUid } from "@/lib/auth";
 import { DEMO_UID } from "@/lib/demo";
 import { hasFirebaseConfig } from "@/lib/firebase";
-import { useNickname } from "@/lib/use-nickname";
+import { stores } from "@/lib/stores";
 import { addWork, workMeta, type UsedStore, type WorkKind } from "@/lib/work";
 import styles from "./work.module.css";
 
@@ -18,7 +18,6 @@ export function WorkComposer({ kind }: { kind: WorkKind }) {
   const meta = workMeta[kind];
   const router = useRouter();
   const { uid } = useAuthUid();
-  const { nickname, setNickname } = useNickname();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -28,15 +27,16 @@ export function WorkComposer({ kind }: { kind: WorkKind }) {
   const configured = hasFirebaseConfig();
   const demo = !configured;
   const authorUid = configured ? uid : DEMO_UID;
+  const storeNames = useMemo(() => stores.filter((store) => store.isVisible).map((store) => store.name), []);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!nickname.trim()) {
-      setError("닉네임을 입력해 주세요.");
-      return;
-    }
     if (!title.trim()) {
       setError("제목을 입력해 주세요.");
+      return;
+    }
+    if (!meta.rich && !body.trim()) {
+      setError("내용을 입력해 주세요.");
       return;
     }
     if (configured && !uid) {
@@ -44,9 +44,9 @@ export function WorkComposer({ kind }: { kind: WorkKind }) {
       return;
     }
 
-    const usedStores = used
-      .map((row) => ({ name: row.name.trim(), how: row.how.trim() }))
-      .filter((row) => row.name);
+    const usedStores = meta.rich
+      ? used.map((row) => ({ name: row.name.trim(), how: row.how.trim() })).filter((row) => row.name)
+      : [];
 
     setSubmitting(true);
     setError("");
@@ -54,9 +54,9 @@ export function WorkComposer({ kind }: { kind: WorkKind }) {
       const ref = await addWork(kind, {
         title: title.trim(),
         body: body.trim(),
-        imageUrls: images,
+        imageUrls: meta.rich ? images : [],
         usedStores,
-        nickname: nickname.trim(),
+        nickname: "",
         authorUid: authorUid ?? DEMO_UID,
       });
       router.replace(`${meta.base}/${ref.id}`);
@@ -79,48 +79,45 @@ export function WorkComposer({ kind }: { kind: WorkKind }) {
 
       <form className={styles.compose} onSubmit={handleSubmit}>
         <div>
-          <label className="label">닉네임</label>
-          <input
-            className="field"
-            value={nickname}
-            onChange={(event) => setNickname(event.target.value)}
-            placeholder="닉네임"
-            maxLength={20}
-          />
-        </div>
-        <div>
           <label className="label">제목</label>
           <input
             className="field"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="예: 황동 무드등 제작 후기"
+            placeholder={meta.titlePlaceholder}
             maxLength={200}
           />
         </div>
+
+        {meta.rich ? (
+          <div>
+            <label className="label">작업 사진 · 도안</label>
+            <ImageUploader value={images} onChange={setImages} />
+          </div>
+        ) : null}
+
         <div>
-          <label className="label">작업 사진 · 도안</label>
-          <ImageUploader value={images} onChange={setImages} />
-        </div>
-        <div>
-          <label className="label">작업 설명</label>
+          <label className="label">{meta.rich ? "작업 설명" : "내용"}</label>
           <textarea
             className={`field ${styles.bodyArea}`}
             value={body}
             onChange={(event) => setBody(event.target.value)}
-            placeholder="어떤 작업인지, 과정과 팁을 적어주세요"
+            placeholder={meta.bodyPlaceholder}
             maxLength={5000}
           />
         </div>
-        <div>
-          <label className="label">사용한 업체</label>
-          <UsedStoresEditor value={used} onChange={setUsed} />
-        </div>
+
+        {meta.rich ? (
+          <div>
+            <label className="label">사용한 업체</label>
+            <UsedStoresEditor value={used} onChange={setUsed} suggestions={storeNames} />
+          </div>
+        ) : null}
 
         {error ? <p className={styles.err}>{error}</p> : null}
 
         <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-          {submitting ? "올리는 중" : demo ? "올리기" : "올리고 +3 크레딧 받기"}
+          {submitting ? "올리는 중" : demo ? "올리기" : meta.submitButtonLabel}
         </button>
       </form>
     </main>

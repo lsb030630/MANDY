@@ -1,9 +1,21 @@
+.filters {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
+}
+
 .list {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin: 0;
-  padding: 16px 16px 28px;
+  padding: 10px 16px 28px;
   list-style: none;
 }
 

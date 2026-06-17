@@ -32,17 +32,13 @@ export function WorkList({ kind }: { kind: WorkKind }) {
         <CreditBadge />
       </header>
 
-      {demo ? (
-        <DemoBanner />
-      ) : (
-        <p className={styles.hintBar}>후기 1개 올리면 +3 크레딧 · 상세 열람 −1</p>
-      )}
+      {demo ? <DemoBanner /> : null}
 
       {loading ? (
         <div className="empty">불러오는 중…</div>
       ) : items.length === 0 ? (
         <div className="empty">
-          아직 후기가 없어요.
+          {meta.emptyTitle}
           <br />
           {meta.emptyHint}
         </div>
@@ -51,18 +47,20 @@ export function WorkList({ kind }: { kind: WorkKind }) {
           {items.map((item) => (
             <li key={item.id}>
               <Link href={`${meta.base}/${item.id}`} className={styles.card}>
-                {item.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className={styles.cover} src={item.coverUrl} alt={item.title} loading="lazy" />
-                ) : (
-                  <div className={styles.coverPlaceholder}>
-                    <Hammer size={28} />
-                  </div>
-                )}
+                {meta.rich ? (
+                  item.coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className={styles.cover} src={item.coverUrl} alt={item.title} loading="lazy" />
+                  ) : (
+                    <div className={styles.coverPlaceholder}>
+                      <Hammer size={28} />
+                    </div>
+                  )
+                ) : null}
                 <div className={styles.cardBody}>
                   <h3 className={styles.cardTitle}>{item.title}</h3>
                   <div className={styles.cardMeta}>
-                    <span className={styles.metaName}>{item.nickname}</span>
+                    <span className={styles.metaName}>익명</span>
                     <span>·</span>
                     <span>{formatRelative(item.createdAt)}</span>
                   </div>

@@ -8,7 +8,8 @@ import {
 import { getFirebaseDb } from "./firebase";
 
 export const SIGNUP_CREDITS = 3;
-export const POST_REWARD = 3;
+export const SHOWCASE_REWARD = 3;
+export const BOARD_COMMENT_REWARD = 1;
 export const VIEW_COST = 1;
 
 /** Creates the user's wallet with the signup bonus on first use (atomic). */
@@ -38,7 +39,7 @@ export function subscribeCredits(uid: string, onChange: (credits: number | null)
 }
 
 /** Adds credits, seeding the signup bonus if the wallet doesn't exist yet. */
-export async function awardCredits(uid: string, amount = POST_REWARD) {
+export async function awardCredits(uid: string, amount = SHOWCASE_REWARD) {
   const db = getFirebaseDb();
   if (!db) return;
   const userRef = doc(db, "users", uid);

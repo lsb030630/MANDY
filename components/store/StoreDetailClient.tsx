@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Bookmark, MapPin, MessageSquarePlus, Phone, Send, Trash2 } from "lucide-react";
 import { ContributeModal } from "@/components/community/ContributeModal";
 import { DemoBanner } from "@/components/community/DemoBanner";
+import { buildAnonLabels } from "@/lib/anon";
 import { useAuthUid } from "@/lib/auth";
 import { DEMO_UID } from "@/lib/demo";
 import { hasFirebaseConfig } from "@/lib/firebase";
@@ -17,13 +18,11 @@ import {
 } from "@/lib/reviews";
 import { getCategoryLabel, type Store } from "@/lib/stores";
 import { useBookmarks } from "@/lib/use-bookmarks";
-import { useNickname } from "@/lib/use-nickname";
 import styles from "./StoreDetailClient.module.css";
 
 export function StoreDetailClient({ store }: { store: Store }) {
   const { bookmarkedSet, toggleBookmark } = useBookmarks();
   const { uid } = useAuthUid();
-  const { nickname, setNickname } = useNickname();
   const [reviews, setReviews] = useState<StoreReview[]>([]);
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -35,6 +34,11 @@ export function StoreDetailClient({ store }: { store: Store }) {
   const demo = !configured;
   const authorUid = configured ? uid : DEMO_UID;
 
+  const reviewLabels = useMemo(() => {
+    const chronological = [...reviews].sort((a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0));
+    return buildAnonLabels(chronological.map((review) => review.authorUid));
+  }, [reviews]);
+
   useEffect(() => subscribeStoreReviews(store.id, setReviews), [store.id]);
 
   const mapQuery = encodeURIComponent(store.address || `서울 ${store.area}`);
@@ -43,10 +47,6 @@ export function StoreDetailClient({ store }: { store: Store }) {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!body.trim()) return;
-    if (!nickname.trim()) {
-      setError("닉네임을 입력해 주세요.");
-      return;
-    }
     if (configured && !uid) {
       setError("연결 중이에요. 잠시 후 다시 시도해 주세요.");
       return;
@@ -58,7 +58,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
       await addStoreReview({
         storeId: store.id,
         body: body.trim(),
-        nickname: nickname.trim(),
+        nickname: "",
         authorUid: authorUid ?? DEMO_UID,
       });
       setBody("");
@@ -151,13 +151,6 @@ export function StoreDetailClient({ store }: { store: Store }) {
         </h3>
 
         <form className={styles.composer} onSubmit={handleSubmit}>
-          <input
-            className="field"
-            value={nickname}
-            onChange={(event) => setNickname(event.target.value)}
-            placeholder="닉네임"
-            maxLength={20}
-          />
           <div className={styles.composerRow}>
             <input
               className="field"
@@ -185,7 +178,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
             reviews.map((review) => (
               <li key={review.id} className={styles.review}>
                 <div className={styles.reviewTop}>
-                  <span className={styles.reviewName}>{review.nickname}</span>
+                  <span className={styles.reviewName}>{reviewLabels.get(review.authorUid) ?? "익명"}</span>
                   <span className={styles.reviewTime}>{formatRelative(review.createdAt)}</span>
                 </div>
                 <p className={styles.reviewBody}>{review.body}</p>
